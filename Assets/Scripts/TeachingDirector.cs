@@ -10,10 +10,12 @@ using UnityEngine.UI;
 public class TeachingDirector : MonoBehaviour
 {
     public GameObject robot;
+    public GameObject logger;
     public TrimMode trimMode;
 
     private RobotController _pRobotControl;
     private Dictionary<string, JointPoint> _pDicPoints;
+    private TextMeshProUGUI _pDisplayLog;
     private int _nCount = 0;
     private string _strTeachingRoot;
     
@@ -39,6 +41,8 @@ public class TeachingDirector : MonoBehaviour
         _pRobotControl.ControlMode = OperationMode.Teaching;
         _pDicPoints = new Dictionary<string, JointPoint>();
         _strTeachingRoot = Path.Combine(Directory.GetCurrentDirectory(), "Teaching");
+        _pDisplayLog = logger.GetComponent<TextMeshProUGUI>();
+        _pDisplayLog.text = "Teaching Mode";
         InitCommons();
     }
 
@@ -83,11 +87,13 @@ public class TeachingDirector : MonoBehaviour
                 break;
             case PlayMode.Teach:
                 _pRobotControl.ControlMode = OperationMode.Teaching;
+                _pDisplayLog.text = $"Teaching Mode [{_pRobotControl.JointPos.Print()}]";
                 break;
             case PlayMode.Save:
                 _pRobotControl.ControlMode = OperationMode.Auto;
                 JointPoint pPointSaved = _pRobotControl.JointPos;
                 pPointSaved.Name = $"Pos{_nCount}";
+                _pDisplayLog.text = $"Save the {pPointSaved.Name} [{pPointSaved.Print()}]";
                 _pDicPoints.Add(pPointSaved.Name, pPointSaved);
                 _nCount++;
                 // Move the job flag to prevent overload
@@ -98,12 +104,14 @@ public class TeachingDirector : MonoBehaviour
                 _pRobotControl.ControlMode = OperationMode.Auto;
                 JointPoint pPointTrimmed = _pRobotControl.JointPos;
                 pPointTrimmed.Trim(trimMode);
+                _pDisplayLog.text = $"Move the trim position [{pPointTrimmed.Print()}]";
                 StartCoroutine(_pRobotControl.Move(pPointTrimmed));
                 // Move the job flag to prevent overload
                 _eUpdateMode = PlayMode.Wait;
                 break;
             case PlayMode.Home:
                 _pRobotControl.ControlMode = OperationMode.Auto;
+                _pDisplayLog.text = "Run Home Script";
                 StartCoroutine(HomeScript());
                 // Move the job flag to prevent overload
                 _eUpdateMode = PlayMode.Wait;
@@ -115,6 +123,7 @@ public class TeachingDirector : MonoBehaviour
                     string strFilePath = Path.Combine(_strTeachingRoot, "Points.json");
                     TeachingFactory.SaveTeachingPoints(_pDicPoints, strFilePath);
                 }
+                _pDisplayLog.text = "Run Replay Script";
                 StartCoroutine(ReplayScript());
                 // Move the job flag to prevent overload
                 _eUpdateMode = PlayMode.Wait;
