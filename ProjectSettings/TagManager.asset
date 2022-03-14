@@ -3,7 +3,10 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - DEAD_ZONE
+  - ICE_CREAM
+  - SPOON
   layers:
   - Default
   - TransparentFX

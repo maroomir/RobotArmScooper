@@ -1,7 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
@@ -12,10 +9,8 @@ public class RobotAgent : Agent
     public GameObject robot;
     public GameObject gripper;
     public GameObject target;
-
     private RobotController _pRobotControl;
     private GripperController _pGripperControl;
-    private bool _bRunScript = false;
     
     private IEnumerator InitScript()
     {
@@ -29,7 +24,7 @@ public class RobotAgent : Agent
     {
         base.Initialize();
         _pRobotControl = robot.GetComponent<RobotController>();
-        _pGripperControl = robot.GetComponent<GripperController>();
+        _pGripperControl = gripper.GetComponent<GripperController>();
         _pRobotControl.ControlMode = OperationMode.Auto;
         _pGripperControl.ControlMode = OperationMode.Auto;
     }
@@ -55,15 +50,25 @@ public class RobotAgent : Agent
     public override void OnActionReceived(ActionBuffers actions)
     {
         base.OnActionReceived(actions);
-        float[] pActions = actions.ContinuousActions.Array;
+        float[] pActions = actions.ContinuousActions.Array; // Spaces : Joint points (Continuous)
+        // Data Normalization
+        for (int i = 0; i < pActions.Length; i++)
+            pActions[i] = Mathf.Clamp(pActions[i], -360.0F, 360.0F);
         JointPoint pActionPos = _pRobotControl.JointPos + JointPoint.FromPosition("agent_pos", pActions);
         pActionPos.FrameCount = 1;
         StartCoroutine(_pRobotControl.Move(pActionPos));
+        // Reward for moving continuously
+        SetReward(-0.0001F);
     }
 
-    // Heuristic is called for direct action
+    // Call the manual action from a developer
     public override void Heuristic(in ActionBuffers actionsOut)
     {
-        base.Heuristic(in actionsOut);
+        ActionSegment<float> pActionSegments = actionsOut.ContinuousActions;
+        for (int i = 0; i < _pRobotControl.joints.Length; i++)
+        {
+            pActionSegments[i] = Input.GetKeyDown($"{i+1}") ? Input.GetAxis("Horizontal") : 0.0F;
+        }
+        Debug.Log(pActionSegments.ToString());
     }
 }

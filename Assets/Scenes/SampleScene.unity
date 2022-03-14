@@ -190,6 +190,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6580701490075614436, guid: b5ea6224d14a848c8b0c004c2c2aec0c, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b5ea6224d14a848c8b0c004c2c2aec0c, type: 3}
 --- !u!1 &467552093 stripped
@@ -250,7 +254,7 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 0
+  MaxStep: 10000
   robot: {fileID: 467552093}
   gripper: {fileID: 891132905}
   target: {fileID: 189841898961891845}
@@ -267,19 +271,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 1
+    VectorObservationSize: 13
     NumStackedVectorObservations: 1
     m_ActionSpec:
-      m_NumContinuousActions: 0
-      BranchSizes: 01000000
-    VectorActionSize: 01000000
+      m_NumContinuousActions: 7
+      BranchSizes: 07000000
+    VectorActionSize: 
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
   m_Model: {fileID: 0}
   m_InferenceDevice: 0
   m_BehaviorType: 0
-  m_BehaviorName: My Behavior
+  m_BehaviorName: PickUpSpoon
   TeamId: 0
   m_UseChildSensors: 1
   m_UseChildActuators: 1
@@ -300,7 +304,7 @@ GameObject:
   - component: {fileID: 623006972}
   m_Layer: 0
   m_Name: TubTable
-  m_TagString: Untagged
+  m_TagString: DEAD_ZONE
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -395,7 +399,7 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 623006968}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.02, y: 0.020000005, z: 0.1226443}
@@ -861,7 +865,7 @@ GameObject:
   - component: {fileID: 1869650758}
   m_Layer: 0
   m_Name: SpoonTable
-  m_TagString: Untagged
+  m_TagString: DEAD_ZONE
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -956,7 +960,7 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1869650754}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.02, y: 0.020000005, z: 0.1226443}
@@ -1213,7 +1217,7 @@ GameObject:
   - component: {fileID: 4442419497055226305}
   m_Layer: 0
   m_Name: Spoon
-  m_TagString: Untagged
+  m_TagString: SPOON
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1239,7 +1243,7 @@ GameObject:
   - component: {fileID: 1533263692952218410}
   m_Layer: 0
   m_Name: Tub
-  m_TagString: Untagged
+  m_TagString: ICE_CREAM
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1466,7 +1470,7 @@ GameObject:
   - component: {fileID: 7966431120125687025}
   m_Layer: 0
   m_Name: RobotTable
-  m_TagString: Untagged
+  m_TagString: DEAD_ZONE
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
