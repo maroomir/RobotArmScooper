@@ -15,7 +15,7 @@ public class RobotAgent : Agent
     private IEnumerator InitScript()
     {
         JointPoint pInitPos = JointPoint.FromPosition("Init", 135.0F, 0.0F, 90.0F, 0.0F, 90.0F, 0.0F, 0.0F);
-        pInitPos.FrameCount = 10;
+        pInitPos.FrameCount = 1;
         yield return _pRobotControl.Move(pInitPos);
     }
 
@@ -40,25 +40,29 @@ public class RobotAgent : Agent
     // CollectObservations is collected the information for the policy update
     public override void CollectObservations(VectorSensor sensor)
     {
-        base.CollectObservations(sensor);
         sensor.AddObservation(_pRobotControl.JointAngles); // 7 Points (J1 - J7)
         sensor.AddObservation(_pGripperControl.EndPoint); // 3 Points (x, y, z)
         sensor.AddObservation(target.transform.position); // 3 Points (x, y, z)
+        Debug.Log($"[AGENT] Collect Observations ({sensor.ObservationSize()})");
+        base.CollectObservations(sensor);
     }
 
     // OnActionReceived does an action received from the policy
     public override void OnActionReceived(ActionBuffers actions)
     {
-        base.OnActionReceived(actions);
         float[] pActions = actions.ContinuousActions.Array; // Spaces : Joint points (Continuous)
         // Data Normalization
         for (int i = 0; i < pActions.Length; i++)
             pActions[i] = Mathf.Clamp(pActions[i], -360.0F, 360.0F);
-        JointPoint pActionPos = _pRobotControl.JointPos + JointPoint.FromPosition("agent_pos", pActions);
-        pActionPos.FrameCount = 1;
-        StartCoroutine(_pRobotControl.Move(pActionPos));
+        JointPoint pActionPos = JointPoint.FromPosition("agent_pos", pActions);
+        Debug.Log($"[AGENT] Input {pActionPos.Print()}");
+        JointPoint pNextPos = _pRobotControl.JointPos + pActionPos; 
+        pNextPos.FrameCount = 1;
+        StartCoroutine(_pRobotControl.Move(pNextPos));
         // Reward for moving continuously
         SetReward(-0.0001F);
+        
+        base.OnActionReceived(actions);
     }
 
     // Call the manual action from a developer
