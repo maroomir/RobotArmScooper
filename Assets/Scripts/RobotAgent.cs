@@ -11,13 +11,6 @@ public class RobotAgent : Agent
     public GameObject target;
     private RobotController _pRobotControl;
     private GripperController _pGripperControl;
-    
-    private IEnumerator InitScript()
-    {
-        JointPoint pInitPos = JointPoint.FromPosition("Init", 135.0F, 0.0F, 90.0F, 0.0F, 90.0F, 0.0F, 0.0F);
-        pInitPos.FrameCount = 1;
-        yield return _pRobotControl.Move(pInitPos);
-    }
 
     // Initialize is called for ready to episode
     public override void Initialize()
@@ -25,8 +18,8 @@ public class RobotAgent : Agent
         base.Initialize();
         _pRobotControl = robot.GetComponent<RobotController>();
         _pGripperControl = gripper.GetComponent<GripperController>();
-        _pRobotControl.ControlMode = OperationMode.Auto;
-        _pGripperControl.ControlMode = OperationMode.Auto;
+        _pRobotControl.ControlMode = OperationMode.Forced;
+        _pGripperControl.ControlMode = OperationMode.Forced;
     }
 
     // OnEpisodeBegin is called before the episode start
@@ -34,7 +27,8 @@ public class RobotAgent : Agent
     {
         base.OnEpisodeBegin();
         Debug.Log("[AGENT] Episode Start");
-        StartCoroutine(InitScript());
+        JointPoint pInitPos = JointPoint.FromPosition("Init", 135.0F, 0.0F, 90.0F, 0.0F, 90.0F, 0.0F, 0.0F);
+        _pRobotControl.ForcedMove(pInitPos);
     }
 
     // CollectObservations is collected the information for the policy update
@@ -56,9 +50,8 @@ public class RobotAgent : Agent
             pActions[i] = Mathf.Clamp(pActions[i], -360.0F, 360.0F);
         JointPoint pActionPos = JointPoint.FromPosition("agent_pos", pActions);
         Debug.Log($"[AGENT] Input {pActionPos.Print()}");
-        JointPoint pNextPos = _pRobotControl.JointPos + pActionPos; 
-        pNextPos.FrameCount = 1;
-        StartCoroutine(_pRobotControl.Move(pNextPos));
+        JointPoint pNextPos = _pRobotControl.JointPos + pActionPos;
+        _pRobotControl.ForcedMove(pNextPos);
         // Reward for moving continuously
         SetReward(-0.0001F);
         
