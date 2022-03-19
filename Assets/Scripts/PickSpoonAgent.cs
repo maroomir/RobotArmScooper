@@ -10,10 +10,17 @@ public class PickSpoonAgent : Agent
     public GameObject robot;
     public GameObject gripper;
     public GameObject target;
+    public Renderer floor;
+    public Material okMaterial;
+    public Material ngMaterial;
+    public Material actionMaterial;
+    public float moveOffset;
+    
     private RobotController _pRobotControl;
     private GripperController _pGripperControl;
     private Vector3 _pInitTargetPos;
     private Quaternion _pInitTargetRotation;
+    private float _fClosedThreshold = 0.001F;
 
     // Initialize is called for ready to episode
     public override void Initialize()
@@ -35,20 +42,31 @@ public class PickSpoonAgent : Agent
         switch (e.ObjectTag)
         {
             case "DEAD_ZONE":
-                SetReward(-10.0F);
+                floor.material = ngMaterial;
+                SetReward(-1.0F);
                 EndEpisode();
                 break;
             case "ICE_CREAM":
-                SetReward(-10.0F);
+                floor.material = ngMaterial;
+                SetReward(-1.0F);
                 EndEpisode();
                 break;
             case "SPOON":
-                float fTargetReward = (e.SelfName == "HandE") ? 10.0F : -10.0F;
-                SetReward(fTargetReward);
+                if (e.SelfName == "HandE" &&
+                    Vector3.Distance(_pGripperControl.EndPoint, _pInitTargetPos) < _fClosedThreshold)
+                {
+                    floor.material = okMaterial;
+                    SetReward(1.0F);
+                }
+                else
+                {
+                    floor.material = ngMaterial;
+                    SetReward(-1.0F);
+                }
                 EndEpisode();
                 break;
             default:
-                SetReward(-0.1F);
+                SetReward(-0.01F);
                 break;
         }
     }
@@ -64,6 +82,14 @@ public class PickSpoonAgent : Agent
         // Robot Initialize
         JointPoint pInitPos = JointPoint.FromPosition("Init", 135.0F, 0.0F, 90.0F, 0.0F, 90.0F, 0.0F, 0.0F);
         _pRobotControl.ForcedMove(pInitPos);
+
+        StartCoroutine(InitMaterial());
+    }
+
+    public IEnumerator InitMaterial()
+    {
+        yield return new WaitForSeconds(0.2F);
+        floor.material = actionMaterial;
     }
 
     // CollectObservations is collected the information for the policy update
@@ -82,14 +108,13 @@ public class PickSpoonAgent : Agent
         float[] pActions = actions.ContinuousActions.Array; // Spaces : Joint points (Continuous)
         // Data Normalization
         for (int i = 0; i < pActions.Length; i++)
-            pActions[i] = Mathf.Clamp(pActions[i], -360.0F, 360.0F);
+            pActions[i] = Mathf.Clamp(pActions[i], -moveOffset, moveOffset);
         JointPoint pActionPos = JointPoint.FromPosition("agent_pos", pActions);
         Debug.Log($"[AGENT] Input {pActionPos.Print()}");
         JointPoint pNextPos = _pRobotControl.JointPos + pActionPos;
         _pRobotControl.ForcedMove(pNextPos);
         // Reward for moving continuously
         SetReward(-0.0001F);
-        
         base.OnActionReceived(actions);
     }
 
