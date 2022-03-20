@@ -40,31 +40,40 @@ public class PickSpoonAgent : Agent
     {
         switch (e.ObjectTag)
         {
+            case "FAR":
+                floor.material = ngMaterial;
+                SetReward(-100.0F);
+                EndEpisode();
+                break;
             case "DEAD_ZONE":
                 floor.material = ngMaterial;
-                SetReward(-1.0F);
+                SetReward(-50.0F);
                 EndEpisode();
                 break;
-            case "ICE_CREAM":
+            case "NEAREST":
                 floor.material = ngMaterial;
-                SetReward(-1.0F);
+                SetReward(-10.0F);
                 EndEpisode();
                 break;
-            case "SPOON":
-                if (Vector3.Distance(_pGripperControl.EndPoint, target.transform.position) < _fClosedThreshold)
+            case "TARGET":
+                float fTargetDistance = Vector3.Distance(_pGripperControl.EndPoint, target.transform.position);
+                if (fTargetDistance < _fClosedThreshold)
                 {
+                    float fAdditionalRate = _fClosedThreshold / fTargetDistance;
                     floor.material = okMaterial;
-                    SetReward(1.0F);
+                    SetReward(100.0F * fAdditionalRate);
+                    Debug.Log($"[AGENT] Target distance in ({fTargetDistance:F4}) < 0.1");
                 }
                 else
                 {
                     floor.material = ngMaterial;
-                    SetReward(-1.0F);
+                    SetReward(-50.0F);
+                    Debug.Log($"[AGENT] Target distance out ({fTargetDistance:F4}) > 0.1");
                 }
                 EndEpisode();
                 break;
             default:
-                SetReward(-0.1F);
+                SetReward(-10.0F);
                 break;
         }
     }
@@ -111,9 +120,7 @@ public class PickSpoonAgent : Agent
         _pRobotControl.ForcedMove(pNextPos);
         // Reward for distance between target and tool
         float fDistance = Vector3.Distance(_pGripperControl.EndPoint, target.transform.position);
-        float fReward = 0.01F * 1 / (0.01F + fDistance);
-        SetReward(fReward);
-        SetReward(-0.01F);
+        SetReward(-fDistance * 0.1F);
         base.OnActionReceived(actions);
     }
 

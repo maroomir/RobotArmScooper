@@ -5,8 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - DEAD_ZONE
-  - ICE_CREAM
-  - SPOON
+  - NEAREST
+  - TARGET
+  - FAR
   layers:
   - Default
   - TransparentFX
