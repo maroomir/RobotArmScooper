@@ -4,6 +4,7 @@ using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
+using Random = UnityEngine.Random;
 
 public class PickSpoonAgent : Agent
 {
@@ -18,8 +19,7 @@ public class PickSpoonAgent : Agent
     
     private RobotController _pRobotControl;
     private GripperController _pGripperControl;
-    private Vector3 _pInitTargetPos;
-    private Quaternion _pInitTargetRotation;
+    private float _fTargetZ;
     private float _fClosedThreshold = 0.1F;
 
     // Initialize is called for ready to episode
@@ -32,9 +32,8 @@ public class PickSpoonAgent : Agent
         _pGripperControl.ControlMode = OperationMode.Forced;
         // Judge a collision
         _pRobotControl.OnCollisionEnterEvent += OnRobotCollisionEvent;
-        // Save the initialize position
-        _pInitTargetPos = target.transform.position;
-        _pInitTargetRotation = target.transform.rotation;
+        // Set the target local position of the Z axis
+        _fTargetZ = target.transform.localPosition.z;
     }
 
     private void OnRobotCollisionEvent(object sender, CollisionEventArgs e)
@@ -52,7 +51,7 @@ public class PickSpoonAgent : Agent
                 EndEpisode();
                 break;
             case "SPOON":
-                if (Vector3.Distance(_pGripperControl.EndPoint, _pInitTargetPos) < _fClosedThreshold)
+                if (Vector3.Distance(_pGripperControl.EndPoint, target.transform.position) < _fClosedThreshold)
                 {
                     floor.material = okMaterial;
                     SetReward(1.0F);
@@ -65,7 +64,7 @@ public class PickSpoonAgent : Agent
                 EndEpisode();
                 break;
             default:
-                SetReward(-0.01F);
+                SetReward(-0.1F);
                 break;
         }
     }
@@ -76,8 +75,7 @@ public class PickSpoonAgent : Agent
         base.OnEpisodeBegin();
         Debug.Log("[AGENT] Episode Start");
         // Target Initialize
-        target.transform.position = _pInitTargetPos;
-        target.transform.rotation = _pInitTargetRotation;
+        target.transform.localPosition = new Vector3(Random.Range(-0.01F, 0.01F),Random.Range(-0.01F, 0.01F), _fTargetZ);
         // Robot Initialize
         JointPoint pInitPos = JointPoint.FromPosition("Init", 135.0F, 0.0F, 90.0F, 0.0F, 90.0F, 0.0F, 0.0F);
         _pRobotControl.ForcedMove(pInitPos);
@@ -111,8 +109,11 @@ public class PickSpoonAgent : Agent
         Debug.Log($"[AGENT] Input {pActionPos.Print()}");
         JointPoint pNextPos = _pRobotControl.JointPos + pActionPos;
         _pRobotControl.ForcedMove(pNextPos);
-        // Reward for moving continuously
-        SetReward(-0.0001F);
+        // Reward for distance between target and tool
+        float fDistance = Vector3.Distance(_pGripperControl.EndPoint, target.transform.position);
+        float fReward = 0.01F * 1 / (0.01F + fDistance);
+        SetReward(fReward);
+        SetReward(-0.01F);
         base.OnActionReceived(actions);
     }
 
