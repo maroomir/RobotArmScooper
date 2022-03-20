@@ -20,7 +20,7 @@ public class PickSpoonAgent : Agent
     private GripperController _pGripperControl;
     private Vector3 _pInitTargetPos;
     private Quaternion _pInitTargetRotation;
-    private float _fClosedThreshold = 0.001F;
+    private float _fClosedThreshold = 0.1F;
 
     // Initialize is called for ready to episode
     public override void Initialize()
@@ -52,8 +52,7 @@ public class PickSpoonAgent : Agent
                 EndEpisode();
                 break;
             case "SPOON":
-                if (e.SelfName == "HandE" &&
-                    Vector3.Distance(_pGripperControl.EndPoint, _pInitTargetPos) < _fClosedThreshold)
+                if (Vector3.Distance(_pGripperControl.EndPoint, _pInitTargetPos) < _fClosedThreshold)
                 {
                     floor.material = okMaterial;
                     SetReward(1.0F);
@@ -95,7 +94,6 @@ public class PickSpoonAgent : Agent
     // CollectObservations is collected the information for the policy update
     public override void CollectObservations(VectorSensor sensor)
     {
-        sensor.AddObservation(_pRobotControl.JointAngles); // 7 Points (J1 - J7)
         sensor.AddObservation(_pGripperControl.EndPoint); // 3 Points (x, y, z)
         sensor.AddObservation(target.transform.position); // 3 Points (x, y, z)
         Debug.Log($"[AGENT] Collect Observations ({sensor.ObservationSize()})");
