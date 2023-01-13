@@ -2,7 +2,7 @@
 
 ![figure](./figure/figure.png)
 
-RobotArmScooper는 RobotArmSimulator 에 Unity MLAgent 를 결합해서 실제로 로봇팔로 강화학습을 시도해본 샘플 프로젝트입니다.
+RobotArmScooper는 [RobotArmSimulator](https://github.com/maroomir/RobotArmSimulator) 에 Unity MLAgent 를 결합해서 실제로 로봇팔로 강화학습을 시도해본 샘플 프로젝트입니다.
 
 초보적인 수준으로 Robot 으로 수저를 집는 것만 해봤지만, ‘22년 4월 이후 더 이상 진행을 하지 못했기 때문에 이 정도에서 1차적으로 public 공개합니다.
 
